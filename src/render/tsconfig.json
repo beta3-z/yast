@@ -1,16 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "noImplicitAny": true,
+    "target": "es5",
+    "module": "amd",
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "../../dist/public",
     "baseUrl": ".",
+    "allowJs": true,
     "paths": {
       "*": ["node_modules/*"]
     }
   },
   "include": [
-    "src/main/**/*"
+    "**/*"
+  ],
+  "exclude": [
+    "lib/*"
   ]
 }

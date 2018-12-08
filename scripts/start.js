@@ -1,9 +1,12 @@
 const path = require('path');
+const fs = require('fs');
 const child_process = require('child_process');
 const constants = require('./constants');
 
 executeInOrder(
-    compileTypeScript,
+    cleanDirectory,
+    compileMainProcess,
+    compileRenderProcess,
     copyAssets,
     startElectron
 );
@@ -13,17 +16,40 @@ function executeInOrder(...fnList){
     fnList.forEach(fn => proceed(fn))
 }
 
+function cleanDirectory(dir){
+    return () => {
+        const entries = fs.readdirSync(constants.DIST_PATH, {
+            withFileTypes: true
+        });
 
-function compileTypeScript(){
-    exec(`npx tsc -p ${constants.ROOT_PATH}`);
+        for (const entry of entries) {
+            if (!entry.name.match(/^\.|\..$/) && !entry.isDirectory()) {
+                console.log(entry.name);
+            }
+        }
+    }
 }
 
-function copyAssets(){
-    const files = [
-        path.join(constants.SRC_PATH, 'index.html')
-    ];
+function compileMainProcess(){
+    exec(`npx tsc -p ${path.join(constants.ROOT_PATH, 'tsconfig.json')} `);
+}
 
-    files.forEach(filePath => exec(`copy /Y ${filePath} ${constants.DIST_PATH}`))
+function compileRenderProcess(){
+    exec(`npx tsc -p ${path.join(constants.ROOT_PATH, 'src/render/', 'tsconfig.json')}`);
+}
+
+
+function copyAssets(){
+    copy(path.join(constants.SRC_PATH, 'render', 'index.html'), path.join(constants.DIST_PATH, 'public'));
+    xcopy(path.join(constants.SRC_PATH, 'render/lib'), path.join(constants.DIST_PATH, 'public/lib'));
+}
+
+function copy(from, to){
+    exec(`copy /Y ${from} ${to}`)
+}
+
+function xcopy(from, to){
+    exec(`xcopy /E /Y ${from} ${to}`)
 }
 
 function startElectron() {
@@ -40,13 +66,13 @@ function proceed(fn){
     console.group(taskName);
 
     try {
-        console.log('begin');
         fn();
     } catch(e) {
-        console.error('ERROR', e.message, e);
+        console.group('ERROR');
+        console.error(e);
+        console.groupEnd();
         throw e;
     } finally {
-        console.log('end');
         console.groupEnd();
     }
 }
@@ -56,6 +82,7 @@ function exec(command, options = {}){
 
     child_process.execSync(command, {
         cwd: constants.ROOT_PATH,
+        stdio: [process.stdin, process.stdout, process.stderr],
         ...options
     });
 }

@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+    <head>
+        <script>
+            var require = {
+                baseURL: '/',
+                deps: ['app'],
+                paths: {
+                    codemirror: 'lib/codemirror/',
+                    codemirrorJavaScriptMode: 'lib/codemirror/mode/javascript'
+                },
+                packages: [{
+                    name: "codemirror",
+                    location: "",
+                    main: "codemirror"
+                }],
+                callback: function(app){
+                    app.start()
+                }
+            };
+        </script>
+        <script src="./lib/require.js"></script>
+        <link rel="stylesheet" href="lib/codemirror/codemirror.css">
+    </head>
+    <body>
+        <div id="root"></div>
+        <textarea id="code">
+            var test = 'Hello world!';
+        </textarea>
+    </body>
+</html>
